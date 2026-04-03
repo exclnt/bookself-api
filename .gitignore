@@ -1,3 +1,5 @@
 .~lock.rama_dicoding_credentials.csv#
 rama_dicoding_credentials.csv
 node_modules/
+bookshelf-api-key.pem
+.env
