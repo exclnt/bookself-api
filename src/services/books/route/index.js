@@ -15,7 +15,7 @@ import validateQuery from "../../../middlewares/validateQuery.js";
 
 const router = express.Router();
 
-router.post("/books", validate(bookPayloadShema), (_, res, next) => {
+router.post("/books", validate(bookPayloadShema), async (_, res, next) => {
   const newBook = _.body;
 
   if (!newBook.name) {
@@ -32,7 +32,8 @@ router.post("/books", validate(bookPayloadShema), (_, res, next) => {
     );
   }
 
-  const addedBook = addBookHandler(newBook);
+  const addedBook = await addBookHandler(newBook);
+
   if (addedBook) {
     return response(res, 201, "Buku berhasil ditambahkan", {
       bookId: addedBook,
@@ -42,23 +43,23 @@ router.post("/books", validate(bookPayloadShema), (_, res, next) => {
   return response(res, 500, "Gagal menambahkan buku", null);
 });
 
-router.get("/books", validateQuery(bookQuerySchema), (_, res) => {
+router.get("/books", validateQuery(bookQuerySchema), async (_, res) => {
   const { reading = undefined, finished = undefined, name = "" } = _.query;
-  const books = getAllBooksHandler(name, reading, finished);
+  const books = await getAllBooksHandler(name, reading, finished);
 
   return response(res, 200, "Buku berhasil ditemukan", { books });
 });
 
-router.get("/books/:bookId", (_, res, next) => {
+router.get("/books/:bookId", async (_, res, next) => {
   const { bookId } = _.params;
-  const book = getBookByIdHandler(bookId);
+  const book = await getBookByIdHandler(bookId);
   if (!book) {
     return next(new NotFoundError("Buku tidak ditemukan"));
   }
   return response(res, 200, "Buku berhasil ditemukan", { book });
 });
 
-router.put("/books/:bookId", (_, res, next) => {
+router.put("/books/:bookId", async (_, res, next) => {
   const { bookId } = _.params;
   const updatedBookData = _.body;
 
@@ -76,7 +77,7 @@ router.put("/books/:bookId", (_, res, next) => {
     );
   }
 
-  const updatedBook = editBookByIdHandler(bookId, updatedBookData);
+  const updatedBook = await editBookByIdHandler(bookId, updatedBookData);
   if (!updatedBook) {
     return next(
       new NotFoundError("Gagal memperbarui buku. Id tidak ditemukan"),
@@ -86,9 +87,9 @@ router.put("/books/:bookId", (_, res, next) => {
   return response(res, 200, "Buku berhasil diperbarui", null);
 });
 
-router.delete("/books/:bookId", (_, res, next) => {
+router.delete("/books/:bookId", async (_, res, next) => {
   const { bookId } = _.params;
-  const isDeleted = deleteBookByIdHandler(bookId);
+  const isDeleted = await deleteBookByIdHandler(bookId);
   if (!isDeleted) {
     return next(new NotFoundError("Buku gagal dihapus. Id tidak ditemukan"));
   }

@@ -1,7 +1,11 @@
+import dotenv from "dotenv";
 import server from "./server/index.js";
+dotenv.config({
+  path: `.env.${process.env.NODE_ENV || "development"}`,
+});
 
-const host = process.env.NODE_ENV !== "production" ? "localhost" : "0.0.0.0";
-const port = process.env.PORT || 9000;
+const port = process.env.PORT;
+const host = process.env.HOST;
 
 server.listen(port, () => {
   console.log(`Server running at http://${host}:${port}`);

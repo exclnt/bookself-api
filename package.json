@@ -7,20 +7,26 @@
   "type": "module",
   "main": "server.js",
   "scripts": {
-    "start:prod": "NODE_ENV=production node ./src/server.js",
-    "start": "node src/server.js",
-    "start-dev": "nodemon src/server.js",
+    "start": "dotenv -e .env.development -- node src/server.js",
+    "start-dev": "dotenv -e .env.development -- nodemon src/server.js",
+    "start:prod": "dotenv -e .env.production -- node src/server.js",
+
+    "migrate": "dotenv -e .env.development -- node-pg-migrate",
+    "migrate:prod": "dotenv -e .env.production -- node-pg-migrate",
+
     "lint": "eslint ./src/",
     "lint:fix": "eslint ./src/ --fix",
     "format": "prettier --write ./src/",
     "format:check": "prettier --check ./src/",
-    "test:api": "newman run ./api-tests/Bookshelf-API-Test.postman_collection.json --environment ./api-tests/Bookshelf-API-Test.postman_environment.json"
+
+    "test:api": "dotenv -e .env.development -- newman run ./api-tests/Bookshelf-API-Test.postman_collection.json --environment ./api-tests/Bookshelf-API-Test.postman_environment.json"
   },
   "dependencies": {
     "dotenv": "^17.4.0",
     "express": "^5.2.1",
     "joi": "^18.1.2",
     "nanoid": "^3.3.11",
+    "node-pg-migrate": "^8.0.4",
     "pg": "^8.20.0"
   },
   "devDependencies": {

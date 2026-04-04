@@ -2,4 +2,6 @@
 rama_dicoding_credentials.csv
 node_modules/
 bookshelf-api-key.pem
-.env
+.env.development
+.env.production
+.prod.env
