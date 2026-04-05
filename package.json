@@ -10,18 +10,16 @@
     "start": "dotenv -e .env.development -- node src/server.js",
     "start-dev": "dotenv -e .env.development -- nodemon src/server.js",
     "start:prod": "dotenv -e .env.production -- node src/server.js",
-
     "migrate": "dotenv -e .env.development -- node-pg-migrate",
     "migrate:prod": "dotenv -e .env.production -- node-pg-migrate",
-
     "lint": "eslint ./src/",
     "lint:fix": "eslint ./src/ --fix",
     "format": "prettier --write ./src/",
     "format:check": "prettier --check ./src/",
-
     "test:api": "dotenv -e .env.development -- newman run ./api-tests/Bookshelf-API-Test.postman_collection.json --environment ./api-tests/Bookshelf-API-Test.postman_environment.json"
   },
   "dependencies": {
+    "aws-sdk": "^2.1693.0",
     "dotenv": "^17.4.0",
     "express": "^5.2.1",
     "joi": "^18.1.2",
