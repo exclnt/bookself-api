@@ -15,6 +15,7 @@ class BookRepositories {
     pageCount,
     readPage,
     reading,
+    owner,
   }) {
     const id = nanoid(16);
     const insertedAt = new Date().toISOString();
@@ -22,8 +23,8 @@ class BookRepositories {
     const finished = pageCount === readPage;
 
     const query = {
-      text: `INSERT INTO books (id, name, year, author, summary, publisher, page_count, read_page, finished, reading, inserted_at, updated_at)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id`,
+      text: `INSERT INTO books (id, name, year, author, summary, publisher, page_count, read_page, finished, reading, inserted_at, updated_at, owner)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id`,
       values: [
         id,
         name,
@@ -37,6 +38,7 @@ class BookRepositories {
         reading,
         insertedAt,
         updatedAt,
+        owner,
       ],
     };
 
@@ -44,27 +46,50 @@ class BookRepositories {
     return result.rows[0];
   }
 
-  async getAllBooks() {
-    const result = await this.pool.query("SELECT id,name,publisher FROM books");
-    return result.rows;
-  }
-  async getBooksByName(name) {
+  async verifyBookOwner(id, owner) {
     const query = {
-      text: "SELECT id,name,publisher FROM books WHERE LOWER(name) LIKE LOWER($1)",
-      values: [`%${name}%`],
+      text: "SELECT * FROM books WHERE id = $1",
+      values: [id],
     };
-
     const result = await this.pool.query(query);
-    return result.rows;
+    if (!result.rows.length) {
+      return null;
+    }
+    const note = result.rows[0];
+    if (note.owner !== owner) {
+      return null;
+    }
+    return result.rows[0];
   }
 
-  async getBooksByReadingStatus(reading) {
-    const query = {
-      text: "SELECT id,name,publisher FROM books WHERE reading = $1",
-      values: [reading],
-    };
+  async getBooks({ name, reading, owner }) {
+    let baseQuery = `
+    SELECT id, name, publisher 
+    FROM books 
+    WHERE owner = $1
+  `;
+    console.log(`owner di getrepo ${owner}`);
 
-    const result = await this.pool.query(query);
+    const values = [owner];
+    let index = 2;
+
+    if (name) {
+      baseQuery += ` AND LOWER(name) LIKE LOWER($${index})`;
+      values.push(`%${name}%`);
+      index++;
+    }
+
+    if (reading !== undefined) {
+      baseQuery += ` AND reading = $${index}`;
+      values.push(reading);
+      // index++;
+    }
+
+    const result = await this.pool.query({
+      text: baseQuery,
+      values,
+    });
+
     return result.rows;
   }
 
