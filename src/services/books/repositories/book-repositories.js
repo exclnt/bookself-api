@@ -70,6 +70,8 @@ class BookRepositories {
   `;
     console.log(`owner di getrepo ${owner}`);
 
+    // const lowerName = name.toLowerCase();
+
     const values = [owner];
     let index = 2;
 

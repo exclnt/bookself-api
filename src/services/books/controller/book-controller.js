@@ -2,6 +2,7 @@
 import { nanoid } from "nanoid";
 import BookRepositories from "../repositories/book-repositories.js";
 import AuthorizationError from "../../../exceptions/authorization-error.js";
+import NotFoundError from "../../../exceptions/not-found-error.js";
 
 const BookRepositoriesInstance = new BookRepositories();
 
@@ -56,6 +57,8 @@ export const getAllBooksHandler = async (
   finished = undefined,
   owner,
 ) => {
+  let readingPrm = undefined;
+  let lowName = undefined;
   // if (books.length === 0) {
   //   return [];
   // }
@@ -70,8 +73,8 @@ export const getAllBooksHandler = async (
     //   publisher,
     // }));
 
-    const books = await BookRepositoriesInstance.getBooksByName(src, owner);
-    return books;
+    lowName = src.toLowerCase();
+    // return books;
   }
 
   if (reading !== undefined) {
@@ -83,10 +86,10 @@ export const getAllBooksHandler = async (
     //   name,
     //   publisher,
     // }));
-    const readingPrm = Boolean(Number(reading));
-    const books =
-      await BookRepositoriesInstance.getBooksByReadingStatus(readingPrm);
-    return books;
+    readingPrm = Boolean(Number(reading));
+    // const books =
+    //   await BookRepositoriesInstance.getBooksByReadingStatus(readingPrm);
+    // return books;
   }
 
   if (finished !== undefined) {
@@ -105,8 +108,8 @@ export const getAllBooksHandler = async (
   }
 
   const books = await BookRepositoriesInstance.getBooks({
-    src,
-    reading,
+    lowName,
+    readingPrm,
     owner,
   });
 
@@ -115,19 +118,23 @@ export const getAllBooksHandler = async (
 };
 
 export const getBookByIdHandler = async (bookId, owner, next) => {
-  // const book = books.find((book) => book.id === bookId);
+  const book = await BookRepositoriesInstance.getBookById(bookId);
+  console.log(book);
+  if (!book) {
+    return next(new NotFoundError("Buku tidak ditemukan"));
+  }
 
+  // 2. baru cek ownership
   const isOwner = await BookRepositoriesInstance.verifyBookOwner(bookId, owner);
+
   if (!isOwner) {
     return next(
       new AuthorizationError("Anda tidak berhak mengakses resource ini"),
     );
   }
-  const book = await BookRepositoriesInstance.getBookById(bookId);
-  if (book) {
-    return book;
-  }
-  return null;
+
+  // 3. kalau lolos semua
+  return book;
 };
 
 export const editBookByIdHandler = async (
@@ -139,28 +146,35 @@ export const editBookByIdHandler = async (
   // const bookIndex = books.findIndex((book) => book.id === bookId);
 
   const isOwner = await BookRepositoriesInstance.verifyBookOwner(bookId, owner);
+
+  const updateBook = await BookRepositoriesInstance.updateBookById(
+    bookId,
+    updatedBookData,
+  );
+  if (!updateBook)
+    return next(
+      new NotFoundError("Gagal memperbarui buku. Id tidak ditemukan"),
+    );
   if (!isOwner) {
     return next(
       new AuthorizationError("Anda tidak berhak mengakses resource ini"),
     );
   }
-  const updateBook = await BookRepositoriesInstance.updateBookById(
-    bookId,
-    updatedBookData,
-  );
-  if (!updateBook) return null;
   return updateBook;
 };
 
 export const deleteBookByIdHandler = async (bookId, owner, next) => {
   const isOwner = await BookRepositoriesInstance.verifyBookOwner(bookId, owner);
+
+  const deleteBook = await BookRepositoriesInstance.deleteBookById(bookId);
+
+  if (!deleteBook)
+    return next(new NotFoundError("Buku gagal dihapus. Id tidak ditemukan"));
   if (!isOwner) {
     return next(
       new AuthorizationError("Anda tidak berhak mengakses resource ini"),
     );
   }
-  const deleteBook = await BookRepositoriesInstance.deleteBookById(bookId);
-  if (!deleteBook) return null;
   // const bookIndex = books.findIndex((book) => book.id === bookId);
   // if (bookIndex === -1) return null;
   // books.splice(bookIndex, 1);

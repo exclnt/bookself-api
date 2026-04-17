@@ -7,6 +7,7 @@ import AuthenticationError from "../../../exceptions/authentication-error.js";
 
 export const login = async (req, res, next) => {
   const { username, password } = req.validated;
+  
   const userId = await UserRepositories.verifyUserCredential(
     username,
     password,

@@ -69,9 +69,8 @@ router.get("/books/:bookId", authenticateToken, async (_, res, next) => {
   const { id: owner } = _.user;
 
   const book = await getBookByIdHandler(bookId, owner, next);
-  if (!book) {
-    return next(new NotFoundError("Buku tidak ditemukan"));
-  }
+
+  if (!book) return;
   return response(res, 200, "Buku berhasil ditemukan", { book });
 });
 
@@ -101,9 +100,7 @@ router.put("/books/:bookId", authenticateToken, async (_, res, next) => {
     next,
   );
   if (!updatedBook) {
-    return next(
-      new NotFoundError("Gagal memperbarui buku. Id tidak ditemukan"),
-    );
+    return;
   }
 
   return response(res, 200, "Buku berhasil diperbarui", null);
@@ -115,7 +112,7 @@ router.delete("/books/:bookId", authenticateToken, async (_, res, next) => {
 
   const isDeleted = await deleteBookByIdHandler(bookId, owner, next);
   if (!isDeleted) {
-    return next(new NotFoundError("Buku gagal dihapus. Id tidak ditemukan"));
+    return;
   }
 
   return response(res, 200, "Buku berhasil dihapus", null);

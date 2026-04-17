@@ -55,6 +55,7 @@ class UserRepositories {
       return null;
     }
 
+    console.log(`user repo id ${user.rows[0]}`);
     const { id, password: hashedPassword } = user.rows[0];
     const isPasswordNatch = await bcrypt.compare(password, hashedPassword);
 
