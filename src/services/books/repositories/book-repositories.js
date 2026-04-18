@@ -1,9 +1,11 @@
 import { nanoid } from "nanoid";
 import { Pool } from "pg";
+import collaborationRepositories from "../../collaborations/repositories/collaboration-repositories.js";
 
 class BookRepositories {
   constructor() {
     this.pool = new Pool();
+    this.collaborationRepositories = collaborationRepositories;
   }
 
   async createBook({
@@ -64,10 +66,12 @@ class BookRepositories {
 
   async getBooks({ name, reading, owner }) {
     let baseQuery = `
-    SELECT id, name, publisher 
-    FROM books 
-    WHERE owner = $1
-  `;
+      SELECT books.id, books.name, books.publisher
+      FROM books
+      LEFT JOIN collaborations ON collaborations.book_id = books.id
+      WHERE (books.owner = $1 OR collaborations.user_id = $1)
+    `;
+
     console.log(`owner di getrepo ${owner}`);
 
     // const lowerName = name.toLowerCase();
@@ -107,7 +111,7 @@ class BookRepositories {
 
   async getBookById(id) {
     const query = {
-      text: "SELECT * FROM books WHERE id = $1",
+      text: "SELECT books.*,users.username FROM books  LEFT JOIN users ON users.id = books.owner WHERE books.id = $1",
       values: [id],
     };
 
@@ -154,6 +158,21 @@ class BookRepositories {
     const result = await this.pool.query(query);
     return result.rowCount > 0;
   }
+
+  async verifyBookAccess(bookId, userId) {
+    const ownerResult = await this.verifyBookOwner(bookId, userId);
+
+    if (ownerResult) {
+      return ownerResult;
+    }
+
+    const result = await this.collaborationRepositories.verifyCollaborator(
+      bookId,
+      userId,
+    );
+
+    return result;
+  }
 }
 
-export default BookRepositories;
+export default new BookRepositories();

@@ -1,10 +1,10 @@
 // import books from "../books.js";
 import { nanoid } from "nanoid";
-import BookRepositories from "../repositories/book-repositories.js";
+import BookRepositoriesInstance from "../repositories/book-repositories.js";
 import AuthorizationError from "../../../exceptions/authorization-error.js";
 import NotFoundError from "../../../exceptions/not-found-error.js";
 
-const BookRepositoriesInstance = new BookRepositories();
+// const BookRepositoriesInstance = new BookRepositories();
 
 export const addBookHandler = async (newBook) => {
   const {
@@ -125,7 +125,10 @@ export const getBookByIdHandler = async (bookId, owner, next) => {
   }
 
   // 2. baru cek ownership
-  const isOwner = await BookRepositoriesInstance.verifyBookOwner(bookId, owner);
+  const isOwner = await BookRepositoriesInstance.verifyBookAccess(
+    bookId,
+    owner,
+  );
 
   if (!isOwner) {
     return next(
@@ -145,7 +148,10 @@ export const editBookByIdHandler = async (
 ) => {
   // const bookIndex = books.findIndex((book) => book.id === bookId);
 
-  const isOwner = await BookRepositoriesInstance.verifyBookOwner(bookId, owner);
+  const isOwner = await BookRepositoriesInstance.verifyBookAccess(
+    bookId,
+    owner,
+  );
 
   const updateBook = await BookRepositoriesInstance.updateBookById(
     bookId,
