@@ -182,7 +182,7 @@ export const deleteBookByIdHandler = async (bookId, owner, next) => {
     );
   }
   // const bookIndex = books.findIndex((book) => book.id === bookId);
-  // if (bookIndex === -1) return null;
+  // if (bookIndex === -1) rbeturn null;
   // books.splice(bookIndex, 1);
   return true;
 };
